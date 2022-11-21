@@ -1,0 +1,16 @@
+
+
+注册接口：
+GET： /users/register
+参数: user_id: 玩家id  channel: 渠道号
+
+登录接口
+GET： /users/login
+参数: user_id: 玩家id  channel: 渠道号  cur_diamond: 当前钻石 cur_task_id 当前任务编号 total_buy_cnt 累计购买次数 total_pay_money 累计支付金额 
+total_video_cnt 累计看视频次数 total_live_day 注册天数
+
+事件接口
+GET： /users/eventlog
+参数: user_id: 玩家id  channel: 渠道号 event_main_type 主事件类型 event_sub_type 子事件类型 param1 通用参数1 param2 通用参数2 param3 通用参数3
+param4 通用参数4 custom_param 扩展参数]
+

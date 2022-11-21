@@ -16,7 +16,35 @@ router.get('/', async (ctx, next) => {
 });
 
 router.get('/sync_order', async (ctx, next) => {
-    console.log(ctx.query);
+    let quest = ctx.query;
+    // console.log(quest);
+    if (
+        !quest.channel ||
+        !quest.user_id ||
+        !quest.order_no ||
+        !quest.order_name ||
+        !quest.pay_money ||
+        !quest.order_pay_status ||
+        !quest.order_use_status ||
+        !quest.create_time ||
+        !quest.pay_time ||
+        !quest.os
+    ) {
+        ctx.body = ERRCODE.param_err;
+        return;
+    }
+
+    let table_name = 'orders_' + quest.channel;
+    let insert_sql = INSERT_DATA(
+        table_name,
+        `user_id, os, order_no, order_name, pay_money, order_pay_status, order_use_status, create_time, pay_time`,
+        `"${quest.user_id}", ${quest.os},"${quest.order_no}" ,"${quest.order_name}" ,${quest.pay_money} ,${quest.order_pay_status} ,${quest.order_use_status} ,"${quest.create_time}","${quest.pay_time}"`
+    );
+    let ret = await query(insert_sql);
+    if (!ret.insertId) {
+        ctx.body = ERRCODE.insert_err;
+        return;
+    }
     ctx.body = ERRCODE.ok;
 });
 

@@ -7,7 +7,7 @@
     "[javascript]": {
         "editor.formatOnSave": true
     },
-    
+
     "prettier.tabWidth": 4,
     "prettier.singleQuote": true,
     "prettier.printWidth": 160,

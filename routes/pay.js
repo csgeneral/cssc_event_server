@@ -11,16 +11,15 @@ let exist_eventlogs_table_names = JSON.parse(fs.readFileSync(table_cache_file_na
 
 router.prefix('/pay');
 
-router.get('/', async (ctx, next) => {
+router.get('/', async(ctx, next) => {
     let query_res = await query(SHOW_ALL_TABLE); //异步方法调用
     ctx.body = query_res;
 });
 
-router.get('/sync_order', async (ctx, next) => {
+router.get('/sync_order', async(ctx, next) => {
     let quest = ctx.query;
     // console.log(quest);
-    if (
-        !quest.channel ||
+    if (!quest.channel ||
         !quest.user_id ||
         !quest.order_no ||
         !quest.order_name ||
@@ -48,6 +47,7 @@ router.get('/sync_order', async (ctx, next) => {
         `${quest.channel}, "${quest.user_id}", ${quest.os},"${quest.order_no}" ,"${quest.order_name}" ,${quest.pay_money} ,${quest.order_pay_status} ,${quest.order_use_status} ,"${quest.create_time}","${quest.pay_time}"`
     );
     let ret = await query(insert_sql);
+
     if (!ret.insertId) {
         ctx.body = ERRCODE.insert_err;
         return;

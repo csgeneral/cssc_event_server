@@ -7,7 +7,7 @@
     "dev": "./node_modules/.bin/nodemon bin/www",
     "prd": "pm2 start bin/www",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "upload": "rsync -avz --exclude 'cache' --exclude 'config' ./* root@101.200.154.34:/root/cssc"
+    "upload": "rsync -avz --exclude 'cache' --exclude 'config' ./* root@101.200.154.34:/home/apps/cssc"
   },
   "dependencies": {
     "debug": "^4.1.1",

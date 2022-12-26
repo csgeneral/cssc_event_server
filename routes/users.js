@@ -111,7 +111,7 @@ router.get('/eventlog', async (ctx, next) => {
     quest.os = quest.os || 'null';
 
     let channels = [1, 2, 3, 4, 5, 6, 1000];
-    let maxmaintype = 20;
+    let maxmaintype = 100000000000;
     let table_name;
     if (channels.includes(+quest.channel) && +quest.event_main_type <= maxmaintype) {
         let date = get_cur_date().split(' ')[0];

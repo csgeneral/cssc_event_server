@@ -40,6 +40,22 @@ const CREATE_EVENTLOGS_TABLE = (tableName) =>
     ) ENGINE=InnoDB AUTO_INCREMENT=34877 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 `;
+
+const CREATE_ACTIVE_USER_TABLE = (tableName) =>
+    `
+    CREATE TABLE IF NOT EXISTS ${tableName} (
+    id int(10) unsigned NOT NULL AUTO_INCREMENT,
+    user_id varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+    channel int(11) NOT NULL,
+    update_type int(11) NOT NULL,
+    update_time datetime NOT NULL,
+    insert_time datetime NOT NULL,
+    insert_timestamp int(11) NOT NULL,
+    PRIMARY KEY (id)
+    ) ENGINE=InnoDB AUTO_INCREMENT=34877 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+`;
+
 //(3) 删除表
 const DROP_TABLE = (tableName) => `DROP TABLE IF EXISTS ${tableName};`;
 //(4) 添加字段
@@ -91,6 +107,7 @@ module.exports = {
     SHOW_ALL_TABLE,
     CREATE_TABLE,
     CREATE_EVENTLOGS_TABLE,
+    CREATE_ACTIVE_USER_TABLE,
     DROP_TABLE,
     ADD_COLUM,
     DROP_COLUM,

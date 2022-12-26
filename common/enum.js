@@ -5,6 +5,7 @@ var ERRCODE = {
     insert_err: { code: 3, msg: '插入数据不成功' },
     update_livetime_err: { code: 4, msg: '更新累计在线时间失败' },
     password_err: { code: 5, msg: '密码输入错误' },
+    update_active_user_err: { code: 6, msg: '更新活跃用户失败' },
 };
 
 module.exports = {

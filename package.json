@@ -10,6 +10,7 @@
     "upload": "rsync -avz --exclude 'cache' --exclude 'config' ./* root@101.200.154.34:/home/apps/cssc"
   },
   "dependencies": {
+    "dayjs": "^1.11.7",
     "debug": "^4.1.1",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
@@ -22,6 +23,7 @@
     "koa-views": "^6.2.0",
     "koa2-cors": "^2.0.6",
     "mysql": "^2.18.1",
+    "node-schedule": "^2.1.0",
     "pug": "^2.0.3"
   },
   "devDependencies": {

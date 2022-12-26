@@ -11,6 +11,7 @@ const index = require('./routes/index');
 const users = require('./routes/users');
 const game_config = require('./routes/game_config');
 const pay = require('./routes/pay');
+const db_util = require('./common/db_util');
 
 // error handler
 onerror(app);
@@ -51,5 +52,7 @@ app.use(pay.routes(), pay.allowedMethods());
 app.on('error', (err, ctx) => {
     console.error('server error', err, ctx);
 });
+
+db_util.update_data_record_per_minute();
 
 module.exports = app;

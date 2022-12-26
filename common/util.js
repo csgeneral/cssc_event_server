@@ -1,6 +1,8 @@
+let dayjs = require('dayjs');
+
 // 获取当前时间字符串
 function get_cur_date() {
-    return new Date(+new Date() + 8 * 3600 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+    return dayjs().format('YYYY-MM-DD HH:mm:ss');
 }
 
 module.exports = {

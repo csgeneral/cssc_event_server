@@ -3,15 +3,15 @@
 
  Source Server         : cssc
  Source Server Type    : MySQL
- Source Server Version : 80028 (8.0.28)
+ Source Server Version : 80028
  Source Host           : localhost:3306
  Source Schema         : cssc
 
  Target Server Type    : MySQL
- Target Server Version : 80028 (8.0.28)
+ Target Server Version : 80028
  File Encoding         : 65001
 
- Date: 23/09/2022 14:22:22
+ Date: 29/12/2022 10:00:21
 */
 
 SET NAMES utf8mb4;
@@ -28,7 +28,9 @@ CREATE TABLE `registers_1` (
   `insert_timestamp` int NOT NULL,
   `total_live_time` bigint DEFAULT NULL,
   `update_time` datetime DEFAULT NULL,
+  `os` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ad_channel` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -56,6 +56,41 @@ const CREATE_ACTIVE_USER_TABLE = (tableName) =>
 
 `;
 
+const CREATE_REGISTER_USER_TABLE = (tableName) =>
+    `
+    CREATE TABLE IF NOT EXISTS ${tableName} (
+    id int(10) unsigned NOT NULL AUTO_INCREMENT,
+    user_id varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+    os varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    ad_channel varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    total_live_time bigint DEFAULT NULL,
+    update_time datetime DEFAULT NULL,
+    insert_time datetime NOT NULL,
+    insert_timestamp int NOT NULL,
+    PRIMARY KEY (id)
+    ) ENGINE=InnoDB AUTO_INCREMENT=34877 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+`;
+
+const CREATE_LOGIN_USER_TABLE = (tableName) =>
+    `
+    CREATE TABLE IF NOT EXISTS ${tableName} (
+    id int(10) unsigned NOT NULL AUTO_INCREMENT,
+    user_id varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+    cur_diamond int NOT NULL,
+    cur_task_id int NOT NULL,
+    total_buy_cnt int NOT NULL,
+    total_pay_money int NOT NULL,
+    total_video_cnt int NOT NULL,
+    total_live_day int NOT NULL,
+    insert_time datetime NOT NULL,
+    insert_timestamp int NOT NULL,
+    os varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    PRIMARY KEY (id)
+    ) ENGINE=InnoDB AUTO_INCREMENT=34877 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+`;
+
 //(3) 删除表
 const DROP_TABLE = (tableName) => `DROP TABLE IF EXISTS ${tableName};`;
 //(4) 添加字段
@@ -108,6 +143,8 @@ module.exports = {
     CREATE_TABLE,
     CREATE_EVENTLOGS_TABLE,
     CREATE_ACTIVE_USER_TABLE,
+    CREATE_REGISTER_USER_TABLE,
+    CREATE_LOGIN_USER_TABLE,
     DROP_TABLE,
     ADD_COLUM,
     DROP_COLUM,

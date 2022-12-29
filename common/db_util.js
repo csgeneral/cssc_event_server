@@ -1,6 +1,6 @@
 const { query } = require('../db/mysql/query'); //引入异步查询方法
 const schedule = require('node-schedule');
-const { get_cur_date } = require('../common/util');
+const { get_cur_date, get_login_user_table, get_register_user_table } = require('../common/util');
 let dayjs = require('dayjs');
 const { INSERT_DATA } = require('../db/mysql/sql');
 
@@ -20,26 +20,26 @@ async function isExistTable(table_name) {
 async function record_realtime_info(channel) {
     let begin_date = dayjs().startOf('day').format('YYYY-MM-DD HH:mm:ss');
     let end_date = dayjs().endOf('day').format('YYYY-MM-DD HH:mm:ss');
-    let newuser = await custom_target_query(`registers_${channel}`, 'count(*) as target', `insert_time >= "${begin_date}" AND insert_time <= "${end_date}"`);
+
+    let register_table_name = get_register_user_table(channel);
+    let newuser = await custom_target_query(register_table_name, 'count(*) as target', `insert_time >= "${begin_date}" AND insert_time <= "${end_date}"`);
 
     // 获取活跃用户表名
-    let date = get_cur_date().split(' ')[0];
-    date = date.replaceAll('-', '_');
-    table_name = `active_users_${date}`;
-
+    let login_table_name = get_login_user_table(channel);
     let active_user = await custom_target_query(
-        `${table_name}`,
-        'count(*) as target',
-        `insert_time >= "${begin_date}" AND insert_time <= "${end_date}" AND channel = ${channel}`
+        `${login_table_name}`,
+        'count(DISTINCT user_id) as target',
+        `insert_time >= "${begin_date}" AND insert_time <= "${end_date}"`
     );
 
     let btime1 = dayjs().subtract(2, 'minute').format('YYYY-MM-DD HH:mm:ss');
     let etime1 = get_cur_date();
-    let online_user = await custom_target_query(
-        `${table_name}`,
-        'count(*) as target',
-        `update_time >= "${btime1}" AND update_time <= "${etime1}" AND channel = ${channel}`
-    );
+    let online_user = 0;
+    // let online_user = await custom_target_query(
+    //     `${table_name}`,
+    //     'count(DISTINCT user_id) as target',
+    //     `update_time >= "${btime1}" AND update_time <= "${etime1}" AND channel = ${channel}`
+    // );
 
     let newuser_pay_money = 0;
     let user_id_sql = `select user_id from registers_${channel} where insert_time >= "${begin_date}" AND insert_time < "${end_date}"`; // 目标user_id 选择sql
@@ -66,6 +66,8 @@ async function record_realtime_info(channel) {
     if (!ret.insertId) {
         return ERRCODE.insert_err;
     }
+
+    console.log(`record_realtime_info: ${channel} ${get_cur_date()} register_table: ${register_table_name} login_table_name: ${login_table_name}`);
 }
 
 function update_data_record_per_minute() {

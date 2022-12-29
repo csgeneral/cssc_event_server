@@ -1,11 +1,20 @@
 const router = require('koa-router')();
 
 const { query } = require('../db/mysql/query'); //引入异步查询方法
-const { SHOW_ALL_TABLE, FIND_DATA, INSERT_DATA, UPDATE_DATA, CREATE_EVENTLOGS_TABLE, CREATE_ACTIVE_USER_TABLE } = require('../db/mysql/sql'); //部分引入sql库
+const {
+    SHOW_ALL_TABLE,
+    FIND_DATA,
+    INSERT_DATA,
+    UPDATE_DATA,
+    CREATE_EVENTLOGS_TABLE,
+    CREATE_REGISTER_USER_TABLE,
+    CREATE_LOGIN_USER_TABLE,
+} = require('../db/mysql/sql'); //部分引入sql库
 const { get_cur_date } = require('../common/util');
 const { isExistTable } = require('../common/db_util');
 const { ERRCODE } = require('../common/enum');
 const fs = require('fs');
+const dayjs = require('dayjs');
 
 const UPDATE_TYPE = {
     register: 1,
@@ -34,44 +43,31 @@ if (!exist_table_names.eventlogs_table && exist_eventlogs_table_names.length > 0
     save_table_cache_info();
 }
 
-exist_table_names.active_user_table = exist_table_names.active_user_table || [];
+exist_table_names.register_table = exist_table_names.register_table || {};
+exist_table_names.login_table = exist_table_names.login_table || {};
 
-// 获取活跃用户表
-let get_active_user_table = async function () {
-    let date = get_cur_date().split(' ')[0];
-    date = date.replaceAll('-', '_');
-    table_name = `active_users_${date}`;
-    if (!exist_table_names.active_user_table.includes(table_name)) {
-        exist_table_names.active_user_table.push(table_name);
-        await query(CREATE_ACTIVE_USER_TABLE(table_name));
+// 获取注册用户表
+let get_register_user_table = async function (channel) {
+    let month = dayjs().month();
+    table_name = `register_${channel}_month_${month}`;
+    if (!exist_table_names.register_table[table_name]) {
+        exist_table_names.register_table[table_name] = true;
+        await query(CREATE_REGISTER_USER_TABLE(table_name));
         save_table_cache_info();
     }
     return table_name;
 };
 
-// 更新活跃用户表
-let update_active_user_table = async function (channel, user_id, update_type) {
-    let table_name = await get_active_user_table();
-    let find_sql = FIND_DATA(table_name, `user_id="${user_id}"`);
-    let data = await query(find_sql);
-    if (data.length > 0) {
-        let updateSql = UPDATE_DATA(table_name, `update_time="${get_cur_date()}",update_type=${update_type}`, `user_id="${user_id}" AND channel=${channel}`);
-        let upret = await query(updateSql);
-        if (!upret.changedRows > 0) {
-            return ERRCODE.update_active_user_err;
-        }
-    } else {
-        let insert_sql = INSERT_DATA(
-            table_name,
-            `user_id, channel, update_type, update_time, insert_time, insert_timestamp`,
-            `"${user_id}", ${channel}, ${update_type}, "${get_cur_date()}", "${get_cur_date()}", ${Math.floor(Date.now() / 1000)}`
-        );
-        let ret = await query(insert_sql);
-        if (!ret.insertId) {
-            return ERRCODE.insert_err;
-        }
+// 获取登录用户表
+let get_login_user_table = async function (channel) {
+    let month = dayjs().month();
+    table_name = `login_${channel}_month_${month}`;
+    if (!exist_table_names.login_table[table_name]) {
+        exist_table_names.login_table[table_name] = true;
+        await query(CREATE_LOGIN_USER_TABLE(table_name));
+        save_table_cache_info();
     }
-    return ERRCODE.ok;
+    return table_name;
 };
 
 router.prefix('/users');
@@ -101,7 +97,7 @@ router.get('/login', async (ctx, next) => {
 
     quest.os = quest.os || 'null';
 
-    let table_name = 'logins_' + quest.channel;
+    let table_name = await get_login_user_table(quest.channel);
     let insert_sql = INSERT_DATA(
         table_name,
         `user_id, os, cur_diamond, cur_task_id, total_buy_cnt, total_pay_money, total_video_cnt, total_live_day, insert_time, insert_timestamp`,
@@ -115,18 +111,7 @@ router.get('/login', async (ctx, next) => {
         return;
     }
 
-    let updateSql = UPDATE_DATA(
-        'registers_' + quest.channel,
-        `total_live_time=${quest.total_live_time}, update_time="${get_cur_date()}"`,
-        `user_id="${quest.user_id}"`
-    );
-    let upret = await query(updateSql);
-    if (!upret.changedRows > 0) {
-        ctx.body = ERRCODE.update_livetime_err;
-        return;
-    }
-    let update_active_user_ret = await update_active_user_table(quest.channel, quest.user_id, UPDATE_TYPE.login);
-    ctx.body = update_active_user_ret;
+    ctx.body = ERRCODE.ok;
 });
 
 router.get('/register', async (ctx, next) => {
@@ -140,7 +125,7 @@ router.get('/register', async (ctx, next) => {
     quest.os = quest.os || 'null';
     quest.adChannel = quest.adChannel || 'null';
 
-    let table_name = 'registers_' + quest.channel;
+    let table_name = await get_register_user_table(quest.channel);
     let find_sql = FIND_DATA(table_name, `user_id="${quest.user_id}"`);
     let data = await query(find_sql);
     if (data.length > 0) {
@@ -159,14 +144,13 @@ router.get('/register', async (ctx, next) => {
         return;
     }
 
-    let update_active_user_ret = await update_active_user_table(quest.channel, quest.user_id, UPDATE_TYPE.register);
-    ctx.body = update_active_user_ret;
+    ctx.body = ERRCODE.ok;
 });
 
 router.get('/eventlog', async (ctx, next) => {
     let quest = ctx.query;
     // console.log(quest);
-    if (!quest.channel || !quest.event_main_type || !quest.event_sub_type) {
+    if (!quest.channel || !quest.event_main_type || !quest.event_sub_type || quest.channel === 'undefined') {
         ctx.body = ERRCODE.param_err;
         return;
     }
@@ -210,25 +194,7 @@ router.get('/eventlog', async (ctx, next) => {
         return;
     }
 
-    if (quest.total_live_time) {
-        let updateSql = UPDATE_DATA(
-            'registers_' + quest.channel,
-            `total_live_time=${quest.total_live_time}, update_time="${get_cur_date()}"`,
-            `user_id="${quest.user_id}"`
-        );
-        let upret = await query(updateSql);
-        if (!upret.changedRows > 0) {
-            ctx.body = ERRCODE.update_livetime_err;
-            return;
-        }
-    }
-
-    if (+quest.event_main_type === 13 || +quest.event_main_type === 14 || +quest.event_main_type === 1300) {
-        ctx.body = ERRCODE.ok;
-    } else {
-        let update_active_user_ret = await update_active_user_table(quest.channel, quest.user_id, UPDATE_TYPE.eventlog);
-        ctx.body = update_active_user_ret;
-    }
+    ctx.body = ERRCODE.ok;
 });
 
 module.exports = router;

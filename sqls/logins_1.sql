@@ -3,32 +3,37 @@
 
  Source Server         : cssc
  Source Server Type    : MySQL
- Source Server Version : 80028 (8.0.28)
+ Source Server Version : 80028
  Source Host           : localhost:3306
  Source Schema         : cssc
 
  Target Server Type    : MySQL
- Target Server Version : 80028 (8.0.28)
+ Target Server Version : 80028
  File Encoding         : 65001
 
- Date: 23/09/2022 14:25:56
+ Date: 29/12/2022 10:28:09
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for registers_2
+-- Table structure for logins_1
 -- ----------------------------
-DROP TABLE IF EXISTS `registers_2`;
-CREATE TABLE `registers_2` (
+DROP TABLE IF EXISTS `logins_1`;
+CREATE TABLE `logins_1` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `cur_diamond` int NOT NULL,
+  `cur_task_id` int NOT NULL,
+  `total_buy_cnt` int NOT NULL,
+  `total_pay_money` int NOT NULL,
+  `total_video_cnt` int NOT NULL,
+  `total_live_day` int NOT NULL,
   `insert_time` datetime NOT NULL,
   `insert_timestamp` int NOT NULL,
-  `total_live_time` bigint DEFAULT NULL,
-  `update_time` datetime DEFAULT NULL,
+  `os` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=239 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

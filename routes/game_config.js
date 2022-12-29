@@ -5,11 +5,12 @@ const fs = require('fs');
 
 let game_config_path = 'cache/game_config.json';
 let game_config = JSON.parse(fs.readFileSync(game_config_path)) || {};
+let game_config_str = JSON.stringify(game_config);
 
 router.prefix('/game_config');
 
 router.get('/', async (ctx, next) => {
-    ctx.body = JSON.stringify(game_config);
+    ctx.body = game_config_str;
 });
 
 router.get('/set', async (ctx, next) => {
@@ -25,7 +26,9 @@ router.get('/set', async (ctx, next) => {
     }
 
     game_config[quest.name] = quest.value;
-    fs.writeFileSync(game_config_path, JSON.stringify(game_config));
+    game_config_str = JSON.stringify(game_config);
+    fs.writeFileSync(game_config_path, game_config_str);
+
     ctx.body = ERRCODE.ok;
 });
 

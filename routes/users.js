@@ -10,7 +10,7 @@ const {
     CREATE_REGISTER_USER_TABLE,
     CREATE_LOGIN_USER_TABLE,
 } = require('../db/mysql/sql'); //部分引入sql库
-const { get_cur_date } = require('../common/util');
+const { get_cur_date, update_online_users } = require('../common/util');
 const { isExistTable } = require('../common/db_util');
 const { ERRCODE } = require('../common/enum');
 const fs = require('fs');
@@ -35,16 +35,9 @@ if (!fs.existsSync(exist_table_cache_file_name)) {
     fs.writeFileSync(exist_table_cache_file_name, JSON.stringify({}));
 }
 var exist_table_names = JSON.parse(fs.readFileSync(exist_table_cache_file_name));
-if (!exist_table_names.eventlogs_table && exist_eventlogs_table_names.length > 0) {
-    exist_table_names.eventlogs_table = exist_eventlogs_table_names;
-    save_table_cache_info();
-} else if (!exist_table_names.eventlogs_table) {
-    exist_table_names.eventlogs_table = [];
-    save_table_cache_info();
-}
-
 exist_table_names.register_table = exist_table_names.register_table || {};
 exist_table_names.login_table = exist_table_names.login_table || {};
+exist_table_names.eventlog_table = exist_table_names.eventlog_table || {};
 
 // 获取注册用户表
 let get_register_user_table = async function (channel) {
@@ -111,6 +104,7 @@ router.get('/login', async (ctx, next) => {
         return;
     }
 
+    update_online_users(quest.channel, quest.user_id);
     ctx.body = ERRCODE.ok;
 });
 
@@ -144,6 +138,7 @@ router.get('/register', async (ctx, next) => {
         return;
     }
 
+    update_online_users(quest.channel, quest.user_id);
     ctx.body = ERRCODE.ok;
 });
 
@@ -163,20 +158,14 @@ router.get('/eventlog', async (ctx, next) => {
     quest.custom_param = quest.custom_param || 'null';
     quest.os = quest.os || 'null';
 
-    let channels = [1, 2, 3, 4, 5, 6, 1000];
-    let maxmaintype = 100000000000;
-    let table_name;
-    if (channels.includes(+quest.channel) && +quest.event_main_type <= maxmaintype) {
-        let date = get_cur_date().split(' ')[0];
-        date = date.replaceAll('-', '_');
-        table_name = `channel${quest.channel}_maintype${quest.event_main_type}_${date}_eventlogs`;
-        if (!exist_table_names.eventlogs_table.includes(table_name)) {
-            exist_table_names.eventlogs_table.push(table_name);
-            let ret = await query(CREATE_EVENTLOGS_TABLE(table_name));
-            save_table_cache_info();
-        }
-    } else {
-        table_name = 'eventlogs_' + quest.channel;
+    let date = get_cur_date().split(' ')[0];
+    date = date.replaceAll('-', '_');
+    let table_name = `channel${quest.channel}_maintype${quest.event_main_type}_${date}_eventlogs`;
+
+    if (!exist_table_names.eventlog_table[table_name]) {
+        exist_table_names.eventlog_table[table_name] = true;
+        await query(CREATE_EVENTLOGS_TABLE(table_name));
+        save_table_cache_info();
     }
 
     let insert_sql = INSERT_DATA(
@@ -194,6 +183,9 @@ router.get('/eventlog', async (ctx, next) => {
         return;
     }
 
+    if (!+quest.event_main_type === 13) {
+        update_online_users(quest.channel, quest.user_id);
+    }
     ctx.body = ERRCODE.ok;
 });
 

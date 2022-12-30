@@ -1,6 +1,6 @@
 const { query } = require('../db/mysql/query'); //引入异步查询方法
 const schedule = require('node-schedule');
-const { get_cur_date, get_login_user_table, get_register_user_table } = require('../common/util');
+const { get_cur_date, get_login_user_table, get_register_user_table, get_online_user_cnt, clear_online_user_cache } = require('../common/util');
 let dayjs = require('dayjs');
 const { INSERT_DATA } = require('../db/mysql/sql');
 
@@ -32,17 +32,10 @@ async function record_realtime_info(channel) {
         `insert_time >= "${begin_date}" AND insert_time <= "${end_date}"`
     );
 
-    let btime1 = dayjs().subtract(2, 'minute').format('YYYY-MM-DD HH:mm:ss');
-    let etime1 = get_cur_date();
-    let online_user = 0;
-    // let online_user = await custom_target_query(
-    //     `${table_name}`,
-    //     'count(DISTINCT user_id) as target',
-    //     `update_time >= "${btime1}" AND update_time <= "${etime1}" AND channel = ${channel}`
-    // );
+    let online_user = get_online_user_cnt(channel);
 
     let newuser_pay_money = 0;
-    let user_id_sql = `select user_id from registers_${channel} where insert_time >= "${begin_date}" AND insert_time < "${end_date}"`; // 目标user_id 选择sql
+    let user_id_sql = `select user_id from ${register_table_name} where insert_time >= "${begin_date}" AND insert_time < "${end_date}"`; // 目标user_id 选择sql
     newuser_pay_money = await custom_target_query(
         'orders',
         'sum(pay_money) as target',
@@ -71,9 +64,14 @@ async function record_realtime_info(channel) {
 }
 
 function update_data_record_per_minute() {
-    const job = schedule.scheduleJob('0 * * * * *', () => {
+    const job1 = schedule.scheduleJob('0 * * * * *', () => {
         record_realtime_info(1);
         record_realtime_info(2);
+    });
+
+    const job2 = schedule.scheduleJob('0 0 0 * * *', () => {
+        clear_online_user_cache();
+        console.log(`clear_online_user_cache: ${get_cur_date()}`);
     });
 }
 

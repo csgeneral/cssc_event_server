@@ -17,7 +17,7 @@ async function isExistTable(table_name) {
     return data[0].isExist === 1;
 }
 
-async function record_realtime_info(channel) {
+async function record_realtime_info(channel, record_time) {
     let begin_date = dayjs().startOf('day').format('YYYY-MM-DD HH:mm:ss');
     let end_date = dayjs().endOf('day').format('YYYY-MM-DD HH:mm:ss');
 
@@ -53,20 +53,21 @@ async function record_realtime_info(channel) {
     let insert_sql = INSERT_DATA(
         'realtime_data_records',
         `channel, record_time, newuser, active_user, online_user, newuser_pay_money, active_user_pay_money`,
-        `${channel}, "${get_cur_date()}", ${newuser}, ${active_user}, ${online_user}, ${newuser_pay_money}, ${active_user_pay_money}`
+        `${channel}, "${record_time}", ${newuser}, ${active_user}, ${online_user}, ${newuser_pay_money}, ${active_user_pay_money}`
     );
     let ret = await query(insert_sql);
     if (!ret.insertId) {
         return ERRCODE.insert_err;
     }
 
-    console.log(`record_realtime_info: ${channel} ${get_cur_date()} register_table: ${register_table_name} login_table_name: ${login_table_name}`);
+    console.log(`record_realtime_info: ${channel} ${record_time} register_table: ${register_table_name} login_table_name: ${login_table_name}`);
 }
 
 function update_data_record_per_minute() {
     const job1 = schedule.scheduleJob('0 * * * * *', () => {
-        record_realtime_info(1);
-        record_realtime_info(2);
+        let record_time = get_cur_date();
+        record_realtime_info(1, record_time);
+        record_realtime_info(2, record_time);
     });
 
     const job2 = schedule.scheduleJob('0 0 0 * * *', () => {

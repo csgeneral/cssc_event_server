@@ -3,6 +3,7 @@ const schedule = require('node-schedule');
 const { get_cur_date, get_login_user_table, get_register_user_table, get_online_user_cnt, clear_online_user_cache } = require('../common/util');
 let dayjs = require('dayjs');
 const { INSERT_DATA } = require('../db/mysql/sql');
+const { ChannelType } = require('./enum');
 
 // 自定义目标查询
 async function custom_target_query(table_name, tar_sql, condition) {
@@ -66,8 +67,11 @@ async function record_realtime_info(channel, record_time) {
 function update_data_record_per_minute() {
     const job1 = schedule.scheduleJob('0 * * * * *', () => {
         let record_time = get_cur_date();
-        record_realtime_info(1, record_time);
-        record_realtime_info(2, record_time);
+        record_realtime_info(ChannelType.wx, record_time);
+        record_realtime_info(ChannelType.jl, record_time);
+        record_realtime_info(ChannelType.taptap, record_time);
+        record_realtime_info(ChannelType.oppoApk, record_time);
+        record_realtime_info(ChannelType.apk233, record_time);
     });
 
     const job2 = schedule.scheduleJob('0 0 0 * * *', () => {
